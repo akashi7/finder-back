@@ -1,0 +1,88 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["clientExtensions"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ERole {
+  RELATIVE
+  AUTHORITY
+  ADMIN
+}
+
+enum EStatus {
+  VIEWED
+  NOT_VIEWED
+}
+
+enum ENotification {
+  NOTIFIED
+  NOT_NOTIFIED
+}
+
+model User {
+  id              Int               @id @default(autoincrement())
+  fullName        String?
+  password        String?
+  phone           String?           @unique
+  role            ERole?
+  createdAt       DateTime?         @default(now())
+  updatedAt       DateTime?         @default(now())
+  Relative        Relative[]
+  Authority       Authority[]
+  MissingChildren MissingChildren[]
+}
+
+model Relative {
+  id        Int       @id @default(autoincrement())
+  district  String?
+  sector    String?
+  cell      String?
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @default(now())
+  userId    Int
+  user      User      @relation(fields: [userId], references: [id], onUpdate: Cascade)
+}
+
+model Authority {
+  id        Int       @id @default(autoincrement())
+  office    String?
+  userId    Int
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @default(now())
+  user      User      @relation(fields: [userId], references: [id], onUpdate: Cascade)
+}
+
+model MissingChildren {
+  id           Int            @id @default(autoincrement())
+  location     String?
+  message      String?
+  imgSrc       String?
+  nationality  String?
+  fullName     String?
+  createdAt    DateTime?      @default(now())
+  updatedAt    DateTime?      @default(now())
+  userId       Int
+  user         User           @relation(fields: [userId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  Notification Notification[]
+}
+
+model Notification {
+  id           Int             @id @default(autoincrement())
+  createdAt    DateTime?       @default(now())
+  updatedAt    DateTime?       @default(now())
+  notification String?
+  status       EStatus         @default(NOT_VIEWED)
+  notified     ENotification   @default(NOT_NOTIFIED)
+  fullName     String?
+  phone        String?
+  childId      Int
+  child        MissingChildren @relation(fields: [childId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+}
