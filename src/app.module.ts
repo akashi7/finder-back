@@ -10,6 +10,7 @@ import { NotificationModule } from './notification/notification.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { RelativeModule } from './relative/relative.module';
 import { SmsModule } from './sms/sms.module';
+import { MailModule } from './mail/mail.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { SmsModule } from './sms/sms.module';
     RelativeModule,
     AuthorityModule,
     SmsModule,
+    MailModule,
   ],
   providers: [
     {

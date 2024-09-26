@@ -7,6 +7,7 @@ import {
   Notification,
 } from '@prisma/client';
 import { catchError, lastValueFrom } from 'rxjs';
+import { MailService } from 'src/mail/mail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { SmsService } from 'src/sms/sms.service';
 import { CreateMissingChildDto, SendNotificationDto } from './dto';
@@ -17,6 +18,7 @@ export class ChildrenService {
     private readonly prismaService: PrismaService,
     private readonly Sms: SmsService,
     private readonly httpService: HttpService,
+    private readonly mail: MailService,
   ) {}
 
   async listAllMissingChildren(): Promise<MissingChildren[]> {
@@ -135,6 +137,12 @@ export class ChildrenService {
       fullName: notification.child.user.fullName,
     };
 
+    const to = notification.child.user.email;
+
+    console.log({ notification: notification.child.user });
+
+    console.log({ to });
+
     await this.prismaService.notification.update({
       where: {
         id,
@@ -143,21 +151,26 @@ export class ChildrenService {
         notified: ENotification.NOTIFIED,
       },
     });
-
-    return this.Sms.sendSMS(obj);
+    return this.mail.sendMail(
+      to,
+      'Notification',
+      'no-reply@schoolnestpay.com',
+      `Dear ${obj.fullName} hope you are good , regarding your missing child case ${obj.name} have infonation regarding it please come at the office `,
+    );
+    // return this.Sms.sendSMS(obj);
   }
 
   async createMessage(phone: string) {
     let count = 1;
     let message = '';
     try {
-      const username = 'coolnet.solutions';
-      const password = 'intouch098';
+      const username = 'akashi77';
+      const password = 'Akashikabuto7';
 
       const credentials = `${username}:${password}`;
-      const recipient = encodeURIComponent(phone);
-      const sender = encodeURIComponent('alahi');
-      const msgg = encodeURIComponent('testing');
+      const recipient = encodeURIComponent('0781273704');
+      const sender = encodeURIComponent('+250781273704');
+      const msgg = encodeURIComponent('Testing');
       const urlParameters = `recipients=${recipient}&sender=${sender}&message=${msgg}`;
 
       const encodedCredentials = Buffer.from(credentials, 'utf-8').toString(
@@ -181,16 +194,17 @@ export class ChildrenService {
           ),
       );
 
-      const responseData = response.data;
-      console.log('\nSending POST request to URL:', url);
-      console.log('Post parameters:', urlParameters);
-      console.log('Response Code:', response.status);
-      console.log('Response Code:', responseData);
+      console.log({ response });
 
       if (response.data.success === false && response.data.response) {
         const errors = response.data.response[0].errors;
         console.log({ errors });
       }
+
+      const responseData = response.data;
+      console.log('\nSending POST request to URL:', url);
+      console.log('Post parameters:', urlParameters);
+      console.log('Response Code:', response.status);
 
       // Process the response data
       const detailsList = responseData.details || [];
@@ -216,7 +230,5 @@ export class ChildrenService {
       console.log('ERROR IN SENDING MESSAGE:', error);
       console.error(error);
     }
-
-    return message;
   }
 }

@@ -7,6 +7,14 @@ export class CreateUserDto {
   @IsNotEmpty()
   @ApiProperty({ type: String, required: true, default: 'Akashi christian' })
   fullName: string;
+  @IsString()
+  @IsNotEmpty()
+  @ApiProperty({
+    type: String,
+    required: true,
+    default: 'christiannseko@gmail.com',
+  })
+  email: string;
   @IsNotEmpty()
   @IsString()
   @ApiProperty({ type: String, required: true, default: '0781273704' })
